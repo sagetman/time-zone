@@ -9,8 +9,7 @@ to do:
 	table comparison (easy)
 	add all countries (moderate)
 	auto-detect time zone based on your geolocation (moderate)
-	allow users to add the time zones they care about (long)
-	store time zones to local storage to remember for next time (?)
+	store my locations to local storage to remember for next time (?)
 	offline app function (easy)
 */
 
@@ -21,28 +20,73 @@ $( document ).ready( function () {
 		currentTimeLocations, 
 		$proposedTime,
 		$proposedTimeZone,
-		localTime;
+		localTime,
+		locationNames = [];
+	hideEverything();
+	$('div .my-locations').show();
+	$('.nav-current-time').on('click', function () {
+		hideEverything();
+		$('div .current-time').show();
+	});
+	$('.nav-time-converter').on('click', function () {
+		hideEverything();
+		$('div .proposed-time').show();
+	});
+	$('.nav-meeting-planner').on('click', function () {
+		hideEverything();
+		$('div .meeting-planner').show();
+	});
+	$('.nav-my-locations').on('click', function () {
+		hideEverything();
+		$('div .my-locations').show();
+	});
 
 	localTime = new Date(); // hard code local time to the timestamp of the client pc
 	localLocationName = 'New York'; // hard code to NYC
 	localTimeZone = lookupTimeZone(localLocationName); //hard code the time zone for NYC for now
-	console.log(localTimeZone);
 	updateLocalTime(localTime);
 
-	currentTimeLocations = setLocations(localTime, localTimeZone); // create all locations we care about
+	locationNames = ['New York', 'Chicago','California','Hong Kong','Cambodia','Germany','Sydney','GMT'];
+	currentTimeLocations = setLocations(locationNames, localTime, localTimeZone); // create all locations we care about
 	updateTimeTable(currentTimeLocations, $('div.current-time tbody')); // add the current time table
 	
 	$proposedTime = $('.proposed-time-input');
 	$proposedTimeZone = $('.proposed-time-location');
-	updateProposedTimeTable($proposedTime.val(), $proposedTimeZone.val()); //run the first time automatically
+	updateProposedTimeTable($proposedTime.val(), $proposedTimeZone.val(), locationNames); //run the first time automatically
 
 	$proposedTime.on('change', function (e) {
-		updateProposedTimeTable($proposedTime.val(), $proposedTimeZone.val());
+		updateProposedTimeTable($proposedTime.val(), $proposedTimeZone.val(), locationNames);
 	});
 	$proposedTimeZone.on('change', function (e) {
-		updateProposedTimeTable($proposedTime.val(), $proposedTimeZone.val());
+		updateProposedTimeTable($proposedTime.val(), $proposedTimeZone.val(), locationNames);
 	});
+
+	$('.add-location-button').on('click', function () {
+		$('table.my-location-table tbody').append('<tr><td class="my-location-row"><span class="my-location-row-name">' + $('.my-location-dropdown').val() + '</span>&nbsp;&nbsp;&nbsp;<a href="#" class="remove-my-location">remove</a></td></tr>');
+		$('.remove-my-location').on('click', function () {
+			$(this).parent().parent().remove();
+			var $myLocationRows = $('table.my-location-table tbody td .my-location-row-name');
+			locationNames = [];
+			for (var i = 0; i < $myLocationRows.length; i++) {
+				locationNames.push($myLocationRows[i].innerText);
+				currentTimeLocations = setLocations(locationNames, localTime, localTimeZone); // create all locations we care about
+				updateTimeTable(currentTimeLocations, $('div.current-time tbody')); // add the current time table
+				updateProposedTimeTable($proposedTime.val(), $proposedTimeZone.val(), locationNames);
+			}
+		});
+		var $myLocationRows = $('table.my-location-table tbody td .my-location-row-name');
+		locationNames = [];
+		for (var i = 0; i < $myLocationRows.length; i++) {
+			locationNames.push($myLocationRows[i].innerText);
+			currentTimeLocations = setLocations(locationNames, localTime, localTimeZone); // create all locations we care about
+			updateTimeTable(currentTimeLocations, $('div.current-time tbody')); // add the current time table
+			updateProposedTimeTable($proposedTime.val(), $proposedTimeZone.val(), locationNames);
+		}
+	});
+
+	
 } );
+
 
 
 
@@ -69,7 +113,7 @@ function updateTimeTable(locations, $div) {
 }
 
 
-function setLocations (baseTime, baseTimeZone) {
+function setLocations (placeNames, baseTime, baseTimeZone) {
 	var locations = [];
 
 	locations.addLocation = function  (name, time) {
@@ -77,6 +121,10 @@ function setLocations (baseTime, baseTimeZone) {
 		this.push({name: name, timeZone: lookupTimeZone(name), currentTime: changeTimeZone(baseTime, baseTimeZone, lookupTimeZone(name))});
 	};
 
+	for (var i = 0; i < placeNames.length; i++) {
+		locations.addLocation(placeNames[i], baseTime);
+	}
+	/*
 	locations.addLocation('New York', baseTime);
 	locations.addLocation('Chicago', baseTime);
 	locations.addLocation('California', baseTime);
@@ -84,7 +132,7 @@ function setLocations (baseTime, baseTimeZone) {
 	locations.addLocation('Cambodia', baseTime);
 	locations.addLocation('Germany', baseTime);
 	locations.addLocation('Sydney', baseTime);
-	locations.addLocation('GMT', baseTime);
+	locations.addLocation('GMT', baseTime);*/
 	return locations;
 }
 
@@ -94,13 +142,13 @@ function changeTimeZone (time, baseTimeZone, newTimeZone) {
 }
 
 
-function updateProposedTimeTable (proposedTimeInput, proposedPlace) {
+function updateProposedTimeTable (proposedTimeInput, proposedPlace, locationNames) {
 	var proposedTime,
 		proposedTimeZone,
 		proposedLocations;
 	proposedTime = parseDate(proposedTimeInput);
 	proposedTimeZone = lookupTimeZone(proposedPlace);
-	proposedLocations = setLocations(proposedTime, proposedTimeZone); //location object
+	proposedLocations = setLocations(locationNames, proposedTime, proposedTimeZone); //location object
 	updateTimeTable(proposedLocations, $('div.proposed-time-table tbody'));
 	
 }
@@ -110,7 +158,7 @@ function lookupTimeZone (locationName) {
 	//Obviously this will need to be fixed
 	// Problem 1: Uses client local time to check for DST. Should be passed in a base date to check
 	// Problem 2: Every country has a different schedule for observing DST
-
+	
 	var now = new Date();
 	var timeZone;
 	var dictionary = {
@@ -159,15 +207,13 @@ function parseDate (proposedTimeInput) {
 	if (hours === 12 && ampm === 'am') {
 		hours = 0;
 	}
-	console.log(hours);
+	
 
 	var parsedDate = new Date(year, month, day, hours, minutes, seconds, milliseconds);
 	if (ampm == 'pm') {
 		parsedDate.addHours(12);
 	}
 	
-
-	console.log(parsedDate);
 	return parsedDate;
 }
 
@@ -219,3 +265,11 @@ function isDST (date, country) {
 	}
 	return dst;
 }
+
+function hideEverything () {
+	$('div .my-locations').hide();
+	$('div .proposed-time').hide();
+	$('div .current-time').hide();
+}
+
+
