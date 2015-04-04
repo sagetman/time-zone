@@ -1,0 +1,58 @@
+
+.main-content {
+	margin-top: 100px;
+}
+/*
+.content-section {
+	text-align: center;
+	padding-top: 30px;
+	padding-bottom: 30px;
+}
+
+@media (max-width: 1200px) {
+	.button-link {
+		margin-top: 10px;
+		margin-bottom: 10px;
+	}
+}*/
+
+.inline {
+	display: inline;
+}
+
+h2.inline {
+	padding-right: 20px;
+}
+
+.time-zone {
+	margin-bottom: 20px;
+}
+
+.current-time {
+	margin-top: 20px;
+}
+
+
+.table-hover>tbody>tr:hover {
+	background-color: #CCE5EC;
+}
+
+.time {
+    text-align:right;
+}
+
+.proposed-time-input {
+	width: 100px !important;
+	margin-left: 15px;
+}
+.proposed-time-location {
+	margin-left: 15px;
+}
+
+.proposed-time-table {
+	margin-top: 15px;
+}
+
+.local-time {
+	margin: 0;
+}

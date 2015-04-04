@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Universal Time Zone Converter</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/my-style.css">
+  </head>
+  <body>
+  	<div class="container">
+  		<nav class="navbar navbar-default navbar-fixed-top">
+  		  <div class="container-fluid">
+  		    <!-- Brand and toggle get grouped for better mobile display -->
+  		    <div class="navbar-header">
+  		      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+  		        <span class="sr-only">Toggle navigation</span>
+  		        <span class="icon-bar"></span>
+  		        <span class="icon-bar"></span>
+  		        <span class="icon-bar"></span>
+  		      </button>
+  		      <a class="navbar-brand" href="index.html"><span class="glyphicon glyphicon-home"></span></a>
+  		    </div>
+  		    <!-- Collect the nav links, forms, and other content for toggling -->
+  		    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+  		      <ul class="nav navbar-nav">
+  		        <li><a href="#">Current Time</a></li>
+  		        <li><a href="#">Time Converter</a></li>
+  		        <li><a href="#">Meeting Planner</a></li>
+  		        <li><a href="#">My Locations</a></li>
+  		    </div><!-- /.navbar-collapse -->
+  		  </div><!-- /.container-fluid -->
+  		</nav>
+  		<div class="main-content">
+			<div class="time-zone">
+				<h2 class="inline">
+					<span class="local-name">New York City</span>
+					<span class="local-time-zone">(-5 UTC)</span>
+					<span class="local-dst">No DSTa</span>
+					</h2><a class="inline"href="#">Change</a>
+			</div>
+			<div class="well">
+				<h3 class="local-time">Current Local Time: <span class="localTime">9:03 PM</span></h3>	
+			</div>
+			
+			<div class="current-time">
+				<table class="table table-striped table-hover">
+				      <thead>
+				        <tr>
+				          <th>Place</th>
+				          <th>Current Time</th>
+				        </tr>
+				      </thead>
+				      <tbody>
+				      </tbody>
+				</table>
+			</div>
+			<div id="proposed-time-form">
+				<form class="form-inline">
+				  <div class="form-group">
+				    <label for="exampleInputName2">Proposed Time</label>
+				    <input type="text" class="form-control inline time proposed-time-input" align="right" placeholder="2:00 PM">
+				  </div>
+				  <div class="form-group  ">
+					  <select class="form-control inline proposed-time-location">
+					    <option>New York</option>
+					    <option>Chicago</option>
+					    <option>California</option>
+					    <option>Hong Kong</option>
+					    <option>Cambodia</option>
+					    <option>Germany</option>
+					    <option>Sydney</option>
+					    <option>GMT</option>
+					  </select>
+				  </div>
+				</form>
+			</div>
+			<div class="proposed-time-table">
+				<table class="table table-striped table-hover">
+				      <thead>
+				        <tr>
+				          <th>Place</th>
+				          <th>Current Time</th>
+				        </tr>
+				      </thead>
+				      <tbody>
+				        <!-- <tr class="warning">
+				          <th scope="row">New York</th>
+				          <td>9:03 PM</td>
+				        </tr>
+				        <tr class="warning">
+				          <th scope="row">California</th>
+				          <td>6:03 PM</td>
+				        </tr>
+				        <tr class="danger">
+				          <th scope="row">GMT</th>
+				          <td>2:03 AM</td>
+				        </tr>
+				        <tr class="danger">
+				          <th scope="row">Germany</th>
+				          <td>3:03 AM</td>
+				        </tr>
+				        <tr class="success">
+				          <th scope="row">Hong Kong</th>
+				          <td>10:03</td>
+				        </tr>
+				        <tr class="success">
+				          <th scope="row">Cambodia</th>
+				          <td>9:03 AM</td>
+				        </tr>
+				        <tr class="success">
+				          <th scope="row">Sydney</th>
+				          <td>1:03 PM</td>
+				        </tr> -->
+				      </tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/extensions.js"></script>
+    <script src="js/my-js.js"></script>
+  </body>
+</html>
