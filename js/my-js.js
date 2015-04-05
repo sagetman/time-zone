@@ -27,6 +27,7 @@ $( document ).ready( function () {
 		$proposedTimeZone,
 		$proposedDate,
 		allTimeZoneNames,
+		newProposedDate,
 		localTime;
 		
 
@@ -72,17 +73,26 @@ $( document ).ready( function () {
 	$proposedAMPM = $('.proposed-AMPM-dropdown');
 	
 
-
+	
 
 	//Event handler for the Proposed time text box and dropdown
 	$proposedTime.on('change', function (e) {
-		updateProposedTimeTable($proposedTime.val(), $proposedDate.val(), $proposedTimeZone.val());
+		newProposedDate = parseDate($proposedTime.val(), $proposedDate.val(), $proposedAMPM.val(), $proposedTimeZone.val());
+		updateTimeTable($('div.proposed-time-table tbody'), newProposedDate);
+		
 	});
 	$proposedTimeZone.on('change', function (e) {
-		updateProposedTimeTable($proposedTime.val(), $proposedDate.val(), $proposedTimeZone.val());
+		newProposedDate = parseDate($proposedTime.val(), $proposedDate.val(), $proposedAMPM.val(), $proposedTimeZone.val());
+		updateTimeTable($('div.proposed-time-table tbody'), newProposedDate);
+		
 	});
 	$proposedDate.on('change', function (e) {
-		updateProposedTimeTable($proposedTime.val(), $proposedDate.val(), $proposedTimeZone.val());
+		newProposedDate = parseDate($proposedTime.val(), $proposedDate.val(), $proposedAMPM.val(), $proposedTimeZone.val());
+		updateTimeTable($('div.proposed-time-table tbody'), newProposedDate);
+	});
+	$proposedAMPM.on('change', function (e) {
+		newProposedDate = parseDate($proposedTime.val(), $proposedDate.val(), $proposedAMPM.val(), $proposedTimeZone.val());
+		updateTimeTable($('div.proposed-time-table tbody'), newProposedDate);
 	});
 
 
@@ -115,7 +125,10 @@ function addMyLocation (newLocation) {
 	// Update the Current Time Table
 	updateTimeTable($('div.current-time tbody'), nowUTC);
 	// Update the Proposed Time Table
-	updateProposedTimeTable($('.proposed-time-input').val(), $('.proposed-date-input').val(), $('.proposed-time-dropdown').val());
+	
+
+	newProposedDate = parseDate($('.proposed-time-input').val(), $('.proposed-date-input').val(), $('.proposed-AMPM-dropdown').val(), $('.proposed-time-dropdown').val());
+	updateTimeTable($('div.proposed-time-table tbody'), newProposedDate);
 }
 
 
@@ -145,21 +158,28 @@ function updateTimeTable($div, baseLocation) {
 
 
 
-function updateProposedTimeTable (proposedTimeInput, proposedDateInput, proposedPlace) {
-	// Convert the input values to the format we need for our date
-	newTimeDate = parseDate(proposedTimeInput, proposedDateInput);
-	// Create a moment based on the proposed time
-	proposedMoment = moment.tz(newTimeDate, proposedPlace);
-	// Update the Proposed Time Table
-	updateTimeTable($('div.proposed-time-table tbody'), proposedMoment);
-}
 
 
-function parseDate (proposedTimeInput, proposedDateInput) {
+
+function parseDate (proposedTime, proposedDate, proposedAMPM, proposedTimeZone) {
+	//$proposedTime.val(), $proposedDate.val(), $proposedAMPM.val(), $proposedTimeZone.val()
+	/*console.log(proposedTime);
+	console.log(proposedDate);
+	console.log(proposedAMPM);
+	console.log(proposedTimeZone);
+	var AMPMtime = (proposedAMPM === 'PM') ? proposedTime + 12 : proposedTime;*/
+	/*console.log('proposed ampm: '+ proposedAMPM + AMPMtime);
+	console.log('ampm time: '+ AMPMtime);*/
+	var data = proposedDate + "T" + proposedTime;
+	console.log(data);
+	console.log(proposedTimeZone);
+	proposedMoment = moment.tz(data, proposedTimeZone);
+	var hour = proposedMoment.hour();
+	proposedMoment = (proposedAMPM === 'PM') ? proposedMoment.hour(hour + 12) : proposedMoment;
 	// Currently does not work very well
 	// Needs output to be 2015-04-05T04:00
 	// So "2015-05-04" and "03:16" is okay, but "2015-05-04" and "3:16" isn't okay, or "3:16am" is not okay
-	return (proposedDateInput + "T" + proposedTimeInput);
+	return proposedMoment;
 }
 
 
