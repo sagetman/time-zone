@@ -1,17 +1,30 @@
 /*
-to do:
-	auto-detect whether DST is true or not
-		find out if the location observes DST (look up from tz database)
-		find out the difference in time zone during DST (look up from tz database)
-		find out when the location observes DST (where can we find?)
-		find out if they're observing it for the specific dates (just test > or <)
-		update the time zone accordingly (update it with the difference)
-	table comparison (easy)
-	add all countries (moderate)
-	auto-detect time zone based on your geolocation (moderate)
-	store my locations to local storage to remember for next time (?)
-	offline app function (easy)
+new to do:
+
+default proposed date
+fix parsetext
+fix removing my location
+
+table comparison
+store my locations to local storage to remember for next time (?)
+offline app function (easy)
 */
+
+
+//global variable for my locations array
+var myLocations = [];
+
+
+function myCallback(json) {
+	//Global variable containing the current time in UTC
+    nowUTC = moment.tz(json.dateString, "UTC"); 
+   /* console.log("UTC " + nowUTC.isDST());
+    console.log("UTC " + nowUTC.tz('America/New_York').isDST());*/
+    /*console.log("The time UTC: "+ nowUTC.format('dddd, MMMM Do YYYY, h:mm:ss a [GMT]Z'));
+    console.log("Time in NYC: " + nowUTC.tz('America/New_York').format('dddd, MMMM Do YYYY, h:mm:ss a [GMT]Z'));*/
+}
+
+
 
 
 $( document ).ready( function () {
@@ -20,256 +33,160 @@ $( document ).ready( function () {
 		currentTimeLocations, 
 		$proposedTime,
 		$proposedTimeZone,
-		localTime,
-		locationNames = [];
-	hideEverything();
-	$('div .my-locations').show();
-	$('.nav-current-time').on('click', function () {
-		hideEverything();
-		$('div .current-time').show();
-	});
-	$('.nav-time-converter').on('click', function () {
-		hideEverything();
-		$('div .proposed-time').show();
-	});
-	$('.nav-meeting-planner').on('click', function () {
-		hideEverything();
-		$('div .meeting-planner').show();
-	});
-	$('.nav-my-locations').on('click', function () {
-		hideEverything();
-		$('div .my-locations').show();
-	});
+		$proposedDate,
+		localTime;
+		
 
-	localTime = new Date(); // hard code local time to the timestamp of the client pc
-	localLocationName = 'New York'; // hard code to NYC
-	localTimeZone = lookupTimeZone(localLocationName); //hard code the time zone for NYC for now
-	updateLocalTime(localTime);
+	
 
-	locationNames = ['New York', 'Chicago','California','Hong Kong','Cambodia','Germany','Sydney','GMT'];
-	currentTimeLocations = setLocations(locationNames, localTime, localTimeZone); // create all locations we care about
-	updateTimeTable(currentTimeLocations, $('div.current-time tbody')); // add the current time table
+	//Get local time zone of the user
+	var userTimeZone = minutesToTime(-new Date().getTimezoneOffset());
+
+	//Get the local time zone name of the user
+	var jstzTemp = jstz.determine(); // Determines the time zone of the browser client
+	var userTimeZoneName = jstzTemp.name(); // Returns the name of the time zone eg "Europe/Berlin"
+	
+	//Get local time of user
+	var userTime = nowUTC.tz(userTimeZoneName);
+	//console.log("the user's time is" + userTime.format('dddd, MMMM Do YYYY, h:mm:ss a [GMT]Z'));
+
+	//Update the local time zone at the top of the page
+	updateLocalTime(userTimeZone, userTimeZoneName, userTime);
+
+	//Time Zone Location Names
+	allTimeZoneNames = ['Africa/Abidjan','Africa/Accra','Africa/Addis_Ababa','Africa/Algiers','Africa/Asmara','Africa/Asmera','Africa/Bamako','Africa/Bangui','Africa/Banjul','Africa/Bissau','Africa/Blantyre','Africa/Brazzaville','Africa/Bujumbura','Africa/Cairo','Africa/Casablanca','Africa/Ceuta','Africa/Conakry','Africa/Dakar','Africa/Dar_es_Salaam','Africa/Djibouti','Africa/Douala','Africa/El_Aaiun','Africa/Freetown','Africa/Gaborone','Africa/Harare','Africa/Johannesburg','Africa/Juba','Africa/Kampala','Africa/Khartoum','Africa/Kigali','Africa/Kinshasa','Africa/Lagos','Africa/Libreville','Africa/Lome','Africa/Luanda','Africa/Lubumbashi','Africa/Lusaka','Africa/Malabo','Africa/Maputo','Africa/Maseru','Africa/Mbabane','Africa/Mogadishu','Africa/Monrovia','Africa/Nairobi','Africa/Ndjamena','Africa/Niamey','Africa/Nouakchott','Africa/Ouagadougou','Africa/Porto-Novo','Africa/Sao_Tome','Africa/Timbuktu','Africa/Tripoli','Africa/Tunis','Africa/Windhoek','America/Adak','America/Anchorage','America/Anguilla','America/Antigua','America/Araguaina','America/Argentina/Buenos_Aires','America/Argentina/Catamarca','America/Argentina/ComodRivadavia','America/Argentina/Cordoba','America/Argentina/Jujuy','America/Argentina/La_Rioja','America/Argentina/Mendoza','America/Argentina/Rio_Gallegos','America/Argentina/Salta','America/Argentina/San_Juan','America/Argentina/San_Luis','America/Argentina/Tucuman','America/Argentina/Ushuaia','America/Aruba','America/Asuncion','America/Atikokan','America/Atka','America/Bahia','America/Bahia_Banderas','America/Barbados','America/Belem','America/Belize','America/Blanc-Sablon','America/Boa_Vista','America/Bogota','America/Boise','America/Buenos_Aires','America/Cambridge_Bay','America/Campo_Grande','America/Cancun','America/Caracas','America/Catamarca','America/Cayenne','America/Cayman','America/Chicago','America/Chihuahua','America/Coral_Harbour','America/Cordoba','America/Costa_Rica','America/Creston','America/Cuiaba','America/Curacao','America/Danmarkshavn','America/Dawson','America/Dawson_Creek','America/Denver','America/Detroit','America/Dominica','America/Edmonton','America/Eirunepe','America/El_Salvador','America/Ensenada','America/Fort_Wayne','America/Fortaleza','America/Glace_Bay','America/Godthab','America/Goose_Bay','America/Grand_Turk','America/Grenada','America/Guadeloupe','America/Guatemala','America/Guayaquil','America/Guyana','America/Halifax','America/Havana','America/Hermosillo','America/Indiana/Indianapolis','America/Indiana/Knox','America/Indiana/Marengo','America/Indiana/Petersburg','America/Indiana/Tell_City','America/Indiana/Vevay','America/Indiana/Vincennes','America/Indiana/Winamac','America/Indianapolis','America/Inuvik','America/Iqaluit','America/Jamaica','America/Jujuy','America/Juneau','America/Kentucky/Louisville','America/Kentucky/Monticello','America/Knox_IN','America/Kralendijk','America/La_Paz','America/Lima','America/Los_Angeles','America/Louisville','America/Lower_Princes','America/Maceio','America/Managua','America/Manaus','America/Marigot','America/Martinique','America/Matamoros','America/Mazatlan','America/Mendoza','America/Menominee','America/Merida','America/Metlakatla','America/Mexico_City','America/Miquelon','America/Moncton','America/Monterrey','America/Montevideo','America/Montreal','America/Montserrat','America/Nassau','America/New_York','America/Nipigon','America/Nome','America/Noronha','America/North_Dakota/Beulah','America/North_Dakota/Center','America/North_Dakota/New_Salem','America/Ojinaga','America/Panama','America/Pangnirtung','America/Paramaribo','America/Phoenix','America/Port-au-Prince','America/Port_of_Spain','America/Porto_Acre','America/Porto_Velho','America/Puerto_Rico','America/Rainy_River','America/Rankin_Inlet','America/Recife','America/Regina','America/Resolute','America/Rio_Branco','America/Rosario','America/Santa_Isabel','America/Santarem','America/Santiago','America/Santo_Domingo','America/Sao_Paulo','America/Scoresbysund','America/Shiprock','America/Sitka','America/St_Barthelemy','America/St_Johns','America/St_Kitts','America/St_Lucia','America/St_Thomas','America/St_Vincent','America/Swift_Current','America/Tegucigalpa','America/Thule','America/Thunder_Bay','America/Tijuana','America/Toronto','America/Tortola','America/Vancouver','America/Virgin','America/Whitehorse','America/Winnipeg','America/Yakutat','America/Yellowknife','Antarctica/Casey','Antarctica/Davis','Antarctica/DumontDUrville','Antarctica/Macquarie','Antarctica/Mawson','Antarctica/McMurdo','Antarctica/Palmer','Antarctica/Rothera','Antarctica/South_Pole','Antarctica/Syowa','Antarctica/Troll','Antarctica/Vostok','Arctic/Longyearbyen','Asia/Aden','Asia/Almaty','Asia/Amman','Asia/Anadyr','Asia/Aqtau','Asia/Aqtobe','Asia/Ashgabat','Asia/Ashkhabad','Asia/Baghdad','Asia/Bahrain','Asia/Baku','Asia/Bangkok','Asia/Beirut','Asia/Bishkek','Asia/Brunei','Asia/Calcutta','Asia/Chita','Asia/Choibalsan','Asia/Chongqing','Asia/Chungking','Asia/Colombo','Asia/Dacca','Asia/Damascus','Asia/Dhaka','Asia/Dili','Asia/Dubai','Asia/Dushanbe','Asia/Gaza','Asia/Harbin','Asia/Hebron','Asia/Ho_Chi_Minh','Asia/Hong_Kong','Asia/Hovd','Asia/Irkutsk','Asia/Istanbul','Asia/Jakarta','Asia/Jayapura','Asia/Jerusalem','Asia/Kabul','Asia/Kamchatka','Asia/Karachi','Asia/Kashgar','Asia/Kathmandu','Asia/Katmandu','Asia/Khandyga','Asia/Kolkata','Asia/Krasnoyarsk','Asia/Kuala_Lumpur','Asia/Kuching','Asia/Kuwait','Asia/Macao','Asia/Macau','Asia/Magadan','Asia/Makassar','Asia/Manila','Asia/Muscat','Asia/Nicosia','Asia/Novokuznetsk','Asia/Novosibirsk','Asia/Omsk','Asia/Oral','Asia/Phnom_Penh','Asia/Pontianak','Asia/Pyongyang','Asia/Qatar','Asia/Qyzylorda','Asia/Rangoon','Asia/Riyadh','Asia/Saigon','Asia/Sakhalin','Asia/Samarkand','Asia/Seoul','Asia/Shanghai','Asia/Singapore','Asia/Srednekolymsk','Asia/Taipei','Asia/Tashkent','Asia/Tbilisi','Asia/Tehran','Asia/Tel_Aviv','Asia/Thimbu','Asia/Thimphu','Asia/Tokyo','Asia/Ujung_Pandang','Asia/Ulaanbaatar','Asia/Ulan_Bator','Asia/Urumqi','Asia/Ust-Nera','Asia/Vientiane','Asia/Vladivostok','Asia/Yakutsk','Asia/Yekaterinburg','Asia/Yerevan','Atlantic/Azores','Atlantic/Bermuda','Atlantic/Canary','Atlantic/Cape_Verde','Atlantic/Faeroe','Atlantic/Faroe','Atlantic/Jan_Mayen','Atlantic/Madeira','Atlantic/Reykjavik','Atlantic/South_Georgia','Atlantic/St_Helena','Atlantic/Stanley','Australia/ACT','Australia/Adelaide','Australia/Brisbane','Australia/Broken_Hill','Australia/Canberra','Australia/Currie','Australia/Darwin','Australia/Eucla','Australia/Hobart','Australia/LHI','Australia/Lindeman','Australia/Lord_Howe','Australia/Melbourne','Australia/NSW','Australia/North','Australia/Perth','Australia/Queensland','Australia/South','Australia/Sydney','Australia/Tasmania','Australia/Victoria','Australia/West','Australia/Yancowinna','Brazil/Acre','Brazil/DeNoronha','Brazil/East','Brazil/West','CET','CST6CDT','Canada/Atlantic','Canada/Central','Canada/East-Saskatchewan','Canada/Eastern','Canada/Mountain','Canada/Newfoundland','Canada/Pacific','Canada/Saskatchewan','Canada/Yukon','Chile/Continental','Chile/EasterIsland','Cuba','EET','EST','EST5EDT','Egypt','Eire','Etc/GMT','Etc/GMT+0','Etc/GMT+1','Etc/GMT+10','Etc/GMT+11','Etc/GMT+12','Etc/GMT+2','Etc/GMT+3','Etc/GMT+4','Etc/GMT+5','Etc/GMT+6','Etc/GMT+7','Etc/GMT+8','Etc/GMT+9','Etc/GMT-0','Etc/GMT-1','Etc/GMT-10','Etc/GMT-11','Etc/GMT-12','Etc/GMT-13','Etc/GMT-14','Etc/GMT-2','Etc/GMT-3','Etc/GMT-4','Etc/GMT-5','Etc/GMT-6','Etc/GMT-7','Etc/GMT-8','Etc/GMT-9','Etc/GMT0','Etc/Greenwich','Etc/UCT','Etc/UTC','Etc/Universal','Etc/Zulu','Europe/Amsterdam','Europe/Andorra','Europe/Athens','Europe/Belfast','Europe/Belgrade','Europe/Berlin','Europe/Bratislava','Europe/Brussels','Europe/Bucharest','Europe/Budapest','Europe/Busingen','Europe/Chisinau','Europe/Copenhagen','Europe/Dublin','Europe/Gibraltar','Europe/Guernsey','Europe/Helsinki','Europe/Isle_of_Man','Europe/Istanbul','Europe/Jersey','Europe/Kaliningrad','Europe/Kiev','Europe/Lisbon','Europe/Ljubljana','Europe/London','Europe/Luxembourg','Europe/Madrid','Europe/Malta','Europe/Mariehamn','Europe/Minsk','Europe/Monaco','Europe/Moscow','Europe/Nicosia','Europe/Oslo','Europe/Paris','Europe/Podgorica','Europe/Prague','Europe/Riga','Europe/Rome','Europe/Samara','Europe/San_Marino','Europe/Sarajevo','Europe/Simferopol','Europe/Skopje','Europe/Sofia','Europe/Stockholm','Europe/Tallinn','Europe/Tirane','Europe/Tiraspol','Europe/Uzhgorod','Europe/Vaduz','Europe/Vatican','Europe/Vienna','Europe/Vilnius','Europe/Volgograd','Europe/Warsaw','Europe/Zagreb','Europe/Zaporozhye','Europe/Zurich','GB','GB-Eire','GMT','GMT+0','GMT-0','GMT0','Greenwich','HST','Hongkong','Iceland','Indian/Antananarivo','Indian/Chagos','Indian/Christmas','Indian/Cocos','Indian/Comoro','Indian/Kerguelen','Indian/Mahe','Indian/Maldives','Indian/Mauritius','Indian/Mayotte','Indian/Reunion','Iran','Israel','Jamaica','Japan','Kwajalein','Libya','MET','MST','MST7MDT','Mexico/BajaNorte','Mexico/BajaSur','Mexico/General','NZ','NZ-CHAT','Navajo','PRC','PST8PDT','Pacific/Apia','Pacific/Auckland','Pacific/Bougainville','Pacific/Chatham','Pacific/Chuuk','Pacific/Easter','Pacific/Efate','Pacific/Enderbury','Pacific/Fakaofo','Pacific/Fiji','Pacific/Funafuti','Pacific/Galapagos','Pacific/Gambier','Pacific/Guadalcanal','Pacific/Guam','Pacific/Honolulu','Pacific/Johnston','Pacific/Kiritimati','Pacific/Kosrae','Pacific/Kwajalein','Pacific/Majuro','Pacific/Marquesas','Pacific/Midway','Pacific/Nauru','Pacific/Niue','Pacific/Norfolk','Pacific/Noumea','Pacific/Pago_Pago','Pacific/Palau','Pacific/Pitcairn','Pacific/Pohnpei','Pacific/Ponape','Pacific/Port_Moresby','Pacific/Rarotonga','Pacific/Saipan','Pacific/Samoa','Pacific/Tahiti','Pacific/Tarawa','Pacific/Tongatapu','Pacific/Truk','Pacific/Wake','Pacific/Wallis','Pacific/Yap','Poland','Portugal','ROC','ROK','Singapore','Turkey','UCT','US/Alaska','US/Aleutian','US/Arizona','US/Central','US/East-Indiana','US/Eastern','US/Hawaii','US/Indiana-Starke','US/Michigan','US/Mountain','US/Pacific','US/Pacific-New','US/Samoa','UTC','Universal','W-SU','WET','Zulu'];
+	
+	//Populate time zone dropdowns
+	$myLocationDropdown = $('.my-location-dropdown');
+	$proposedTimeDropdown = $('.proposed-time-dropdown');
+	for (var i = 0; i < allTimeZoneNames.length; i++) {
+		$myLocationDropdown.append("<option>"+allTimeZoneNames[i]+"</option>");
+		$proposedTimeDropdown.append("<option>"+allTimeZoneNames[i]+"</option>");
+	}
+
+
+
+
+	//Add the user's local time zone to my locations by default
+	addMyLocation(userTimeZoneName);
+	
+
 	
 	$proposedTime = $('.proposed-time-input');
-	$proposedTimeZone = $('.proposed-time-location');
-	updateProposedTimeTable($proposedTime.val(), $proposedTimeZone.val(), locationNames); //run the first time automatically
+	$proposedDate = $('.proposed-date-input');
+	$proposedTimeZone = $('.proposed-time-dropdown');
+	//updateProposedTimeTable($proposedTime.val(), $proposedTimeZone.val(), myLocations); //run the first time automatically
 
+
+	//Event handler for the Proposed time text box and dropdown
 	$proposedTime.on('change', function (e) {
-		updateProposedTimeTable($proposedTime.val(), $proposedTimeZone.val(), locationNames);
+		updateProposedTimeTable($proposedTime.val(), $proposedDate.val(), $proposedTimeZone.val());
 	});
 	$proposedTimeZone.on('change', function (e) {
-		updateProposedTimeTable($proposedTime.val(), $proposedTimeZone.val(), locationNames);
+		updateProposedTimeTable($proposedTime.val(), $proposedDate.val(), $proposedTimeZone.val());
 	});
 
-	$('.add-location-button').on('click', function () {
-		$('table.my-location-table tbody').append('<tr><td class="my-location-row"><span class="my-location-row-name">' + $('.my-location-dropdown').val() + '</span>&nbsp;&nbsp;&nbsp;<a href="#" class="remove-my-location">remove</a></td></tr>');
-		$('.remove-my-location').on('click', function () {
-			$(this).parent().parent().remove();
-			var $myLocationRows = $('table.my-location-table tbody td .my-location-row-name');
-			locationNames = [];
-			for (var i = 0; i < $myLocationRows.length; i++) {
-				locationNames.push($myLocationRows[i].innerText);
-				currentTimeLocations = setLocations(locationNames, localTime, localTimeZone); // create all locations we care about
-				updateTimeTable(currentTimeLocations, $('div.current-time tbody')); // add the current time table
-				updateProposedTimeTable($proposedTime.val(), $proposedTimeZone.val(), locationNames);
-			}
-		});
-		var $myLocationRows = $('table.my-location-table tbody td .my-location-row-name');
-		locationNames = [];
-		for (var i = 0; i < $myLocationRows.length; i++) {
-			locationNames.push($myLocationRows[i].innerText);
-			currentTimeLocations = setLocations(locationNames, localTime, localTimeZone); // create all locations we care about
-			updateTimeTable(currentTimeLocations, $('div.current-time tbody')); // add the current time table
-			updateProposedTimeTable($proposedTime.val(), $proposedTimeZone.val(), locationNames);
-		}
+	//Event handler for "Add Location Button"
+	$('.add-location-button').on('click', function (e) {
+		// Stop the button from reloading the page
+		e.preventDefault();
+		// The new location we're going to add is the current value of the dropdown
+		newLocation = $('.my-location-dropdown').val();
+		// Add the location
+		addMyLocation(newLocation);
 	});
 
 	
 } );
 
+function addMyLocation (newLocation) {
+	//add the row to the My Locations table
+	$('table.my-location-table tbody').append('<tr><td class="my-location-row"><span class="my-location-row-name">' + newLocation + '</span>&nbsp;&nbsp;&nbsp;<a href="#" class="remove-my-location">remove</a></td></tr>');
+	
+	//Since we're adding it dynamically, we must add the onlick handler for "remove" in the same function
+	$('.remove-my-location').on('click', function () {
+		$(this).parent().parent().remove(); //remove the row from the My Locations table
+		//myLocations.splice(index, 1);		//need to remove the value from the array here, but need to know the index first
+		//need to remove the value from the Current Time table
+		//need to remove the value from the Proposed Time table
+	});
+	// Add it to the array
+	myLocations.push(newLocation);
+	// Update the Current Time Table
+	updateTimeTable($('div.current-time tbody'), nowUTC);
+	// Update the Proposed Time Table
+	updateProposedTimeTable($('.proposed-time-input').val(), $('.proposed-date-input').val(), $('.proposed-time-dropdown').val());
+}
 
 
 
-function updateTimeTable(locations, $div) {
+function updateTimeTable($div, baseLocation) {
 	$div.empty();
-	for (var i = 0; i < locations.length; i++) {
+	for (var i = 0; i < myLocations.length; i++) {
 		var color, html;
-		if (locations[i].currentTime.getHours() >= 9 && locations[i].currentTime.getHours() <= 16) {
+		if (baseLocation.tz(myLocations[i]).hour() >= 8 && baseLocation.tz(myLocations[i]).hour() <= 15) {
 			color = "success";
 		}
-		else if (locations[i].currentTime.getHours() > 16 && locations[i].currentTime.getHours() <= 20) {
+		else if (baseLocation.tz(myLocations[i]).hour() > 15 && baseLocation.tz(myLocations[i]).hour() <= 19) {
 			color = "warning";
 		}
-		else if (locations[i].currentTime.getHours() < 9 && locations[i].currentTime.getHours() >= 6) {
+		else if (baseLocation.tz(myLocations[i]).hour() < 8 && baseLocation.tz(myLocations[i]).hour() >= 5) {
 			color = "warning";
 		}
 		else {
 			color = "danger";
 		}
-		html = '<tr class="' + color + '"><th class="placeName" scope="row">' + locations[i].name + '</th><td class="placeTime">' + locations[i].currentTime.format('#h#:#mm# #AMPM#') + '</td></tr>';
+		html = '<tr class="' + color + '"><th class="placeName" scope="row">' + myLocations[i] + '</th><td class="placeTime">' + baseLocation.tz(myLocations[i]).format('h:mm a (dddd)') + '</td></tr>';
 		
 		$div.append(html);
 	}
 }
 
 
-function setLocations (placeNames, baseTime, baseTimeZone) {
-	var locations = [];
 
-	locations.addLocation = function  (name, time) {
-		var baseTime = copyTime(time);
-		this.push({name: name, timeZone: lookupTimeZone(name), currentTime: changeTimeZone(baseTime, baseTimeZone, lookupTimeZone(name))});
-	};
 
-	for (var i = 0; i < placeNames.length; i++) {
-		locations.addLocation(placeNames[i], baseTime);
-	}
-	/*
-	locations.addLocation('New York', baseTime);
-	locations.addLocation('Chicago', baseTime);
-	locations.addLocation('California', baseTime);
-	locations.addLocation('Hong Kong', baseTime);
-	locations.addLocation('Cambodia', baseTime);
-	locations.addLocation('Germany', baseTime);
-	locations.addLocation('Sydney', baseTime);
-	locations.addLocation('GMT', baseTime);*/
-	return locations;
-}
-
-function changeTimeZone (time, baseTimeZone, newTimeZone) {
-	time.addHours(-baseTimeZone+newTimeZone);
-	return time;
+function updateProposedTimeTable (proposedTimeInput, proposedDateInput, proposedPlace) {
+	// Convert the input values to the format we need for our date
+	newTimeDate = parseDate(proposedTimeInput, proposedDateInput);
+	// Create a moment based on the proposed time
+	proposedMoment = moment.tz(newTimeDate, proposedPlace);
+	// Update the Proposed Time Table
+	updateTimeTable($('div.proposed-time-table tbody'), proposedMoment);
 }
 
 
-function updateProposedTimeTable (proposedTimeInput, proposedPlace, locationNames) {
-	var proposedTime,
-		proposedTimeZone,
-		proposedLocations;
-	proposedTime = parseDate(proposedTimeInput);
-	proposedTimeZone = lookupTimeZone(proposedPlace);
-	proposedLocations = setLocations(locationNames, proposedTime, proposedTimeZone); //location object
-	updateTimeTable(proposedLocations, $('div.proposed-time-table tbody'));
-	
-}
-
-function lookupTimeZone (locationName) {
-	//Note: This only checks whether it's DST according to the client's local time and US schedule
-	//Obviously this will need to be fixed
-	// Problem 1: Uses client local time to check for DST. Should be passed in a base date to check
-	// Problem 2: Every country has a different schedule for observing DST
-	
-	var now = new Date();
-	var timeZone;
-	var dictionary = {
-		'New York': {noDST: -5, DST: -4},
-		'Chicago': {noDST: -6, DST: -5},
-		'California': {noDST: -8, DST: -7},
-		'Hong Kong': {noDST: 8, DST: 8},
-		'Cambodia': {noDST: 7, DST: 7},
-		'Germany': {noDST: 1, DST: 1},
-		'Sydney': {noDST: 11, DST: 11},
-		'GMT': {noDST: 0, DST: 0},
-		};
-	if (isDST(now, locationName)) {
-		timeZone = dictionary[locationName].DST;
-	}
-	else {
-		timeZone = dictionary[locationName].noDST;
-	}
-
-	return timeZone;
-}
-
-function copyTime (time) {
-	return new Date(time.getFullYear(), time.getMonth(), time.getDay()+1, time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds());
-}
-
-function parseDate (proposedTimeInput) {
-	var now, ampm, year, month, day, hours, minutes, seconds, milliseconds;
-	now = new Date();
-
-	//hard code values we won't use
-	//we can set them up to user input later if we want to include them
-	year = now.getFullYear();
-	month = now.getMonth();
-	day = now.getDay();
-	seconds = now.getSeconds();
-	milliseconds = now.getMilliseconds();
-
-	var myString = proposedTimeInput;
-	var myRegexp = /(\d+):(\d+)(am|pm)/g;
-
-	hours = getMatches2(myString, myRegexp, 1)[0];
-	minutes = getMatches2(myString, myRegexp, 2)[0];
-	ampm = getMatches2(myString, myRegexp, 3)[0];
-	
-	if (hours === 12 && ampm === 'am') {
-		hours = 0;
-	}
-	
-
-	var parsedDate = new Date(year, month, day, hours, minutes, seconds, milliseconds);
-	if (ampm == 'pm') {
-		parsedDate.addHours(12);
-	}
-	
-	return parsedDate;
+function parseDate (proposedTimeInput, proposedDateInput) {
+	// Currently does not work very well
+	// Needs output to be 2015-04-05T04:00
+	// So "2015-05-04" and "03:16" is okay, but "2015-05-04" and "3:16" isn't okay, or "3:16am" is not okay
+	return (proposedDateInput + "T" + proposedTimeInput);
 }
 
 
 
-function getMatches(string, regex) {
-    return regex.exec(string);
-}
+function updateLocalTime (userTimeZone, userTimeZoneName, userTime) {
+	$('.local-name').text(userTimeZoneName);
+	$('.local-time-zone').text('(' + userTimeZone +')');
 
-function getMatches2(string, regex, index) {
-    index || (index = 1); // default to the first capturing group
-    var matches = [];
-    var match;
-    while (match = regex.exec(string)) {
-        matches.push(match[index]);
-    }
-    return matches;
-}
-
-
-function updateLocalTime (localTime) {
-	$('.local-name').text('New York City');
-	$('.local-time-zone').text('(-5 UTC)');
-	if (isDST(localTime)) {
+	if (userTime.isDST()) {
 		$('.local-dst').text('DST');
 	}
 	else {
 		$('.local-dst').text('No DST');
 	}
-	
-	$('.localTime').text(localTime.format('#h#:#mm# #AMPM#'));
-	$('.proposed-time-input').val(localTime.format('#h#:#mm##ampm#'));
+	$('.localTime').text(userTime.format('dddd, MMMM Do YYYY, h:mma'));
+	$('.proposed-time-input').val(userTime.format('h:mma'));
+
+
 }
 
-function isDST (date, country) {
-	//CURRENTLY ONLY CHECK US SCHEDULE
-	// Should update so that it checks the country being passed in, and checks the local schedule for that country
-
-	var dst;	
-	var month = date.getMonth() + 1;
-	if (month < 3 || month >= 11) {
-		dst = false;
-	}
-	else if (month === 3 && date.getDate() < 8) {
-		dst = false;
-	}
-	else {
-		dst = true;
-	}
-	return dst;
-}
-
-function hideEverything () {
-	$('div .my-locations').hide();
-	$('div .proposed-time').hide();
-	$('div .current-time').hide();
+function minutesToTime (totalMinutes) {
+	var hours, minutes, time;
+	hours = Math.floor( totalMinutes / 60);          
+	minutes = totalMinutes % 60;
+	minutes = (minutes < 10) ? "0" + minutes : minutes;
+	time = hours + ":" + minutes;
+	return time;
 }
 
 

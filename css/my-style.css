@@ -56,3 +56,11 @@ h2.inline {
 .local-time {
 	margin: 0;
 }
+
+.my-locations, .current-time, .proposed-time {
+	margin-bottom: 75px;
+}
+
+.my-locations {
+	margin-top: 75px;
+}
