@@ -7,6 +7,7 @@
     <title>Universal Time Zone Converter</title>
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/my-style.css">
+    <link rel="stylesheet" href="css/bootstrap-datepicker3.standalone.css">
   </head>
   <body>
   	  	<div class="container">
@@ -83,8 +84,13 @@
   						<form class="form-inline">
   						  <div class="form-group">
   						    <label for="exampleInputName2">Proposed Time</label>
-  						    <input type="text" class="form-control inline time proposed-date-input" align="right" placeholder="2015-04-05">
-  						    <input type="text" class="form-control inline time proposed-time-input" align="right" placeholder="2:00 PM">
+  						    <input type="text" class="form-control inline time proposed-date-input" data-provide="datepicker" data-date-format="yyyy-mm-dd">
+  						    <input type="text" class="form-control inline time proposed-time-input" align="right" placeholder="2:00">
+  						    
+  						    <select class="form-control inline proposed-AMPM-dropdown">
+  						    	<option>AM</option>
+  						    	<option>PM</option>
+  							  </select>
   						  </div>
   						  <div class="form-group  ">
   							  <select class="form-control inline proposed-time-dropdown">
@@ -97,7 +103,7 @@
   						      <thead>
   						        <tr>
   						          <th>Place</th>
-  						          <th>Current Time</th>
+  						          <th>Proposed Time</th>
   						        </tr>
   						      </thead>
   						      <tbody>
@@ -115,6 +121,7 @@
     <script src="js/moment-timezone-with-data-2010-2020.js"></script>
     <script src="js/moment-timezone.js"></script>
     <script src="js/jstz-1.0.4.min.js"></script>
+    <script src="js/bootstrap-datepicker.js"></script>
     <script type="text/javascript" src="http://www.timeapi.org/utc/now.json?callback=myCallback&format=%25Y-%25m-%25dT%25X%25Z"></script>
   </body>
 </html>

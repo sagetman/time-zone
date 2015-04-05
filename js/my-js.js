@@ -14,18 +14,10 @@ offline app function (easy)
 //global variable for my locations array
 var myLocations = [];
 
-
 function myCallback(json) {
 	//Global variable containing the current time in UTC
     nowUTC = moment.tz(json.dateString, "UTC"); 
-   /* console.log("UTC " + nowUTC.isDST());
-    console.log("UTC " + nowUTC.tz('America/New_York').isDST());*/
-    /*console.log("The time UTC: "+ nowUTC.format('dddd, MMMM Do YYYY, h:mm:ss a [GMT]Z'));
-    console.log("Time in NYC: " + nowUTC.tz('America/New_York').format('dddd, MMMM Do YYYY, h:mm:ss a [GMT]Z'));*/
 }
-
-
-
 
 $( document ).ready( function () {
 	var localTimeZone,
@@ -34,6 +26,7 @@ $( document ).ready( function () {
 		$proposedTime,
 		$proposedTimeZone,
 		$proposedDate,
+		allTimeZoneNames,
 		localTime;
 		
 
@@ -63,6 +56,7 @@ $( document ).ready( function () {
 		$myLocationDropdown.append("<option>"+allTimeZoneNames[i]+"</option>");
 		$proposedTimeDropdown.append("<option>"+allTimeZoneNames[i]+"</option>");
 	}
+	$('.proposed-time-dropdown').val(userTimeZoneName);
 
 
 
@@ -75,7 +69,9 @@ $( document ).ready( function () {
 	$proposedTime = $('.proposed-time-input');
 	$proposedDate = $('.proposed-date-input');
 	$proposedTimeZone = $('.proposed-time-dropdown');
-	//updateProposedTimeTable($proposedTime.val(), $proposedTimeZone.val(), myLocations); //run the first time automatically
+	$proposedAMPM = $('.proposed-AMPM-dropdown');
+	
+
 
 
 	//Event handler for the Proposed time text box and dropdown
@@ -85,6 +81,10 @@ $( document ).ready( function () {
 	$proposedTimeZone.on('change', function (e) {
 		updateProposedTimeTable($proposedTime.val(), $proposedDate.val(), $proposedTimeZone.val());
 	});
+	$proposedDate.on('change', function (e) {
+		updateProposedTimeTable($proposedTime.val(), $proposedDate.val(), $proposedTimeZone.val());
+	});
+
 
 	//Event handler for "Add Location Button"
 	$('.add-location-button').on('click', function (e) {
@@ -167,17 +167,10 @@ function parseDate (proposedTimeInput, proposedDateInput) {
 function updateLocalTime (userTimeZone, userTimeZoneName, userTime) {
 	$('.local-name').text(userTimeZoneName);
 	$('.local-time-zone').text('(' + userTimeZone +')');
-
-	if (userTime.isDST()) {
-		$('.local-dst').text('DST');
-	}
-	else {
-		$('.local-dst').text('No DST');
-	}
+	$('.local-dst').text((userTime.isDST()) ? 'DST' : 'No DST');
 	$('.localTime').text(userTime.format('dddd, MMMM Do YYYY, h:mma'));
-	$('.proposed-time-input').val(userTime.format('h:mma'));
-
-
+	$('.proposed-time-input').val(userTime.format('h:mm'));
+	$('.proposed-date-input').val(userTime.format('YYYY-MM-DD'));
 }
 
 function minutesToTime (totalMinutes) {

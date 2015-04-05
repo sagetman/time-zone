@@ -41,13 +41,11 @@ h2.inline {
     text-align:right;
 }
 
-.proposed-time-input {
+.proposed-time-input, .proposed-date-input {
 	width: 100px !important;
-	margin-left: 15px;
+	text-align: center;
 }
-.proposed-time-location {
-	margin-left: 15px;
-}
+
 
 .proposed-time-table {
 	margin-top: 15px;
@@ -63,4 +61,8 @@ h2.inline {
 
 .my-locations {
 	margin-top: 75px;
+}
+
+.proposed-date-input {
+	margin-left: 15px;
 }
