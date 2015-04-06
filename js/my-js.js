@@ -246,7 +246,7 @@ function updateMyLocationsTable() {
 		localStorage.setItem('myLocations', JSON.stringify(myLocations));
 
 		// Update my locations table
-		updateMyLocation6sTable();
+		updateMyLocationsTable();
 		// Update the Current Time Table
 		updateTimeTable($('div.current-time tbody'), nowUTC);
 		// Update the Proposed Time Table
