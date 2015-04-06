@@ -55,12 +55,13 @@ h2.inline {
 	margin: 0;
 }
 
-.my-locations, .current-time, .proposed-time {
-	margin-bottom: 75px;
+.top-info {
+	margin-bottom: 40px;
 }
 
-.my-locations {
-	margin-top: 75px;
+.instructions {
+	margin-top: 20px;
+	margin-bottom: 15px;
 }
 
 

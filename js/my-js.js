@@ -25,6 +25,25 @@ $( document ).ready( function () {
 		newProposedDate,
 		localTime;
 
+	hideEverything();
+	$('div .my-locations').show();
+	$('.nav-current-time').on('click', function () {
+		hideEverything();
+		$('div .current-time').show();
+	});
+	$('.nav-time-converter').on('click', function () {
+		hideEverything();
+		$('div .proposed-time').show();
+	});
+	$('.nav-meeting-planner').on('click', function () {
+		hideEverything();
+		$('div .meeting-planner').show();
+	});
+	$('.nav-my-locations').on('click', function () {
+		hideEverything();
+		$('div .my-locations').show();
+	});
+
 	//local storage stuff---------------------------------
 	if(typeof(Storage) !== "undefined") {
 	    if (localStorage.myLocations !== undefined) {
@@ -37,6 +56,31 @@ $( document ).ready( function () {
 	    myLocations = [];
 	}
 	//end local storage------------------------------------------------------------
+
+	hideEverything();
+	if (myLocations.length > 1) {
+		$('div .current-time').show();
+	}
+	else {
+		$('div .my-locations').show();
+	}
+	
+	$('.nav-current-time').on('click', function () {
+		hideEverything();
+		$('div .current-time').show();
+	});
+	$('.nav-time-converter').on('click', function () {
+		hideEverything();
+		$('div .proposed-time').show();
+	});
+	$('.nav-meeting-planner').on('click', function () {
+		hideEverything();
+		$('div .meeting-planner').show();
+	});
+	$('.nav-my-locations').on('click', function () {
+		hideEverything();
+		$('div .my-locations').show();
+	});
 
 	//Get local time zone of the user
 	var userTimeZone = minutesToTime(-new Date().getTimezoneOffset());
@@ -254,4 +298,11 @@ function updateMyLocationsTable() {
 		updateTimeTable($('div.proposed-time-table tbody'), newProposedDate);
 		updateMeetingPlanner();
 	});
+}
+
+function hideEverything () {
+	$('div .my-locations').hide();
+	$('div .proposed-time').hide();
+	$('div .current-time').hide();
+	$('div .meeting-planner').hide();
 }
