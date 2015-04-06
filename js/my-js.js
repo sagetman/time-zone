@@ -14,9 +14,6 @@ function myCallback(json) {
     nowUTC = moment.tz(json.dateString, "UTC"); 
 }
 
-
-
-
 $( document ).ready( function () {
 	var localTimeZone,
 		localLocationName,
@@ -39,15 +36,6 @@ $( document ).ready( function () {
 	} else {
 	    myLocations = [];
 	}
-	
-	/*$('.save-button').on('click', function (e) {
-		e.preventDefault();
-		localStorage.setItem('bacon', $('.local-test').val());
-	});
-	$('.get-button').on('click', function (e) {
-		e.preventDefault();
-		alert(localStorage.bacon);
-	});*/
 	//end local storage------------------------------------------------------------
 
 	//Get local time zone of the user
@@ -127,42 +115,6 @@ $( document ).ready( function () {
 		// Add the location
 		addMyLocation(newLocation);
 	});
-
-	/*var substringMatcher = function(strs) {
-	  return function findMatches(q, cb) {
-	    var matches, substrRegex;
-	 
-	    // an array that will be populated with substring matches
-	    matches = [];
-	 
-	    // regex used to determine if a string contains the substring `q`
-	    substrRegex = new RegExp(q, 'i');
-	 
-	    // iterate through the pool of strings and for any string that
-	    // contains the substring `q`, add it to the `matches` array
-	    $.each(strs, function(i, str) {
-	      if (substrRegex.test(str)) {
-	        // the typeahead jQuery plugin expects suggestions to a
-	        // JavaScript object, refer to typeahead docs for more info
-	        matches.push({ value: str });
-	      }
-	    });
-	 
-	    cb(matches);
-	  };
-	};
-	 
-	 
-	$('#proposed-time-zone-typeahead.typeahead').typeahead({
-	  hint: true,
-	  highlight: true,
-	  minLength: 1
-	},
-	{
-	  name: 'allTimeZoneNames',
-	  displayKey: 'value',
-	  source: substringMatcher(allTimeZoneNames)
-	});*/
 
 } );
 
@@ -282,13 +234,24 @@ function colors (hour) {
 function updateMyLocationsTable() {
 	$('table.my-location-table tbody').empty();
 	for (var i = 0; i < myLocations.length; i++) {
-		$('table.my-location-table tbody').append('<tr><td class="my-location-row"><span class="my-location-row-name">' + myLocations[i] + '</span>&nbsp;&nbsp;&nbsp;<a href="#" class="remove-my-location">remove</a></td></tr>');
+		$('table.my-location-table tbody').append('<tr><td class="my-location-row" data-index="' + i + '"><span class="my-location-row-name">' + myLocations[i] + '</span>&nbsp;&nbsp;&nbsp;<a href="#" class="remove-my-location">remove</a></td></tr>');
 		//Since we're adding it dynamically, we must add the onlick handler for "remove" in the same function
-		$('.remove-my-location').on('click', function () {
-			$(this).parent().parent().remove(); //remove the row from the My Locations table
-			//myLocations.splice(index, 1);		//need to remove the value from the array here, but need to know the index first
-			//need to remove the value from the Current Time table
-			//need to remove the value from the Proposed Time table
-		});
 	}
+	$('.remove-my-location').on('click', function () {
+		index = $(this).parent().data("index");
+		//remove it from the array
+		console.log('remove index ' + index);
+		myLocations.splice(index, 1);		//need to remove the value from the array here, but need to know the index first
+
+		localStorage.setItem('myLocations', JSON.stringify(myLocations));
+
+		// Update my locations table
+		updateMyLocation6sTable();
+		// Update the Current Time Table
+		updateTimeTable($('div.current-time tbody'), nowUTC);
+		// Update the Proposed Time Table
+		newProposedDate = parseDate($('.proposed-time-input').val(), $('.proposed-date-input').val(), $('.proposed-AMPM-dropdown').val(), $('.proposed-time-dropdown').val());
+		updateTimeTable($('div.proposed-time-table tbody'), newProposedDate);
+		updateMeetingPlanner();
+	});
 }
