@@ -1,15 +1,10 @@
 /*
 new to do:
-
-default proposed date
-fix parsetext
-fix removing my location
-
-table comparison
-store my locations to local storage to remember for next time (?)
-offline app function (easy)
+	clean up everything
+	remove my location
+	offline app function
+	typeahead instead of dropdown?
 */
-
 
 //global variable for my locations array
 var myLocations = [];
@@ -18,6 +13,9 @@ function myCallback(json) {
 	//Global variable containing the current time in UTC
     nowUTC = moment.tz(json.dateString, "UTC"); 
 }
+
+
+
 
 $( document ).ready( function () {
 	var localTimeZone,
@@ -29,9 +27,28 @@ $( document ).ready( function () {
 		allTimeZoneNames,
 		newProposedDate,
 		localTime;
-		
 
+	//local storage stuff---------------------------------
+	if(typeof(Storage) !== "undefined") {
+	    if (localStorage.myLocations !== undefined) {
+	    	myLocations = JSON.parse(localStorage["myLocations"]);
+	    }
+	   	else {
+	   		myLocations = [];
+	   	}
+	} else {
+	    myLocations = [];
+	}
 	
+	/*$('.save-button').on('click', function (e) {
+		e.preventDefault();
+		localStorage.setItem('bacon', $('.local-test').val());
+	});
+	$('.get-button').on('click', function (e) {
+		e.preventDefault();
+		alert(localStorage.bacon);
+	});*/
+	//end local storage------------------------------------------------------------
 
 	//Get local time zone of the user
 	var userTimeZone = minutesToTime(-new Date().getTimezoneOffset());
@@ -58,22 +75,28 @@ $( document ).ready( function () {
 		$proposedTimeDropdown.append("<option>"+allTimeZoneNames[i]+"</option>");
 	}
 	$('.proposed-time-dropdown').val(userTimeZoneName);
-
-
-
+	$('.proposed-AMPM-dropdown').val(userTime.format('a').toUpperCase());
 
 	//Add the user's local time zone to my locations by default
-	addMyLocation(userTimeZoneName);
+	if (myLocations.length === 0) {
+		addMyLocation(userTimeZoneName);	
+	}
+	else {
+		updateMyLocationsTable();
+		// Update the Current Time Table
+		updateTimeTable($('div.current-time tbody'), nowUTC);
+		// Update the Proposed Time Table
+		newProposedDate = parseDate($('.proposed-time-input').val(), $('.proposed-date-input').val(), $('.proposed-AMPM-dropdown').val(), $('.proposed-time-dropdown').val());
+		updateTimeTable($('div.proposed-time-table tbody'), newProposedDate);
+		// Update meeting planner
+		updateMeetingPlanner();
+	}
 	
 
-	
 	$proposedTime = $('.proposed-time-input');
 	$proposedDate = $('.proposed-date-input');
 	$proposedTimeZone = $('.proposed-time-dropdown');
 	$proposedAMPM = $('.proposed-AMPM-dropdown');
-	
-
-	
 
 	//Event handler for the Proposed time text box and dropdown
 	$proposedTime.on('change', function (e) {
@@ -95,7 +118,6 @@ $( document ).ready( function () {
 		updateTimeTable($('div.proposed-time-table tbody'), newProposedDate);
 	});
 
-
 	//Event handler for "Add Location Button"
 	$('.add-location-button').on('click', function (e) {
 		// Stop the button from reloading the page
@@ -106,83 +128,89 @@ $( document ).ready( function () {
 		addMyLocation(newLocation);
 	});
 
-	
+	/*var substringMatcher = function(strs) {
+	  return function findMatches(q, cb) {
+	    var matches, substrRegex;
+	 
+	    // an array that will be populated with substring matches
+	    matches = [];
+	 
+	    // regex used to determine if a string contains the substring `q`
+	    substrRegex = new RegExp(q, 'i');
+	 
+	    // iterate through the pool of strings and for any string that
+	    // contains the substring `q`, add it to the `matches` array
+	    $.each(strs, function(i, str) {
+	      if (substrRegex.test(str)) {
+	        // the typeahead jQuery plugin expects suggestions to a
+	        // JavaScript object, refer to typeahead docs for more info
+	        matches.push({ value: str });
+	      }
+	    });
+	 
+	    cb(matches);
+	  };
+	};
+	 
+	 
+	$('#proposed-time-zone-typeahead.typeahead').typeahead({
+	  hint: true,
+	  highlight: true,
+	  minLength: 1
+	},
+	{
+	  name: 'allTimeZoneNames',
+	  displayKey: 'value',
+	  source: substringMatcher(allTimeZoneNames)
+	});*/
+
 } );
 
 function addMyLocation (newLocation) {
-	//add the row to the My Locations table
-	$('table.my-location-table tbody').append('<tr><td class="my-location-row"><span class="my-location-row-name">' + newLocation + '</span>&nbsp;&nbsp;&nbsp;<a href="#" class="remove-my-location">remove</a></td></tr>');
 	
-	//Since we're adding it dynamically, we must add the onlick handler for "remove" in the same function
-	$('.remove-my-location').on('click', function () {
-		$(this).parent().parent().remove(); //remove the row from the My Locations table
-		//myLocations.splice(index, 1);		//need to remove the value from the array here, but need to know the index first
-		//need to remove the value from the Current Time table
-		//need to remove the value from the Proposed Time table
-	});
 	// Add it to the array
 	myLocations.push(newLocation);
+	localStorage.setItem('myLocations', JSON.stringify(myLocations));
+
+	// Update my locations table
+	updateMyLocationsTable();
 	// Update the Current Time Table
 	updateTimeTable($('div.current-time tbody'), nowUTC);
 	// Update the Proposed Time Table
-	
-
 	newProposedDate = parseDate($('.proposed-time-input').val(), $('.proposed-date-input').val(), $('.proposed-AMPM-dropdown').val(), $('.proposed-time-dropdown').val());
 	updateTimeTable($('div.proposed-time-table tbody'), newProposedDate);
+	updateMeetingPlanner();
 }
-
-
 
 function updateTimeTable($div, baseLocation) {
 	$div.empty();
 	for (var i = 0; i < myLocations.length; i++) {
 		var color, html;
-		if (baseLocation.tz(myLocations[i]).hour() >= 8 && baseLocation.tz(myLocations[i]).hour() <= 15) {
-			color = "success";
-		}
-		else if (baseLocation.tz(myLocations[i]).hour() > 15 && baseLocation.tz(myLocations[i]).hour() <= 19) {
-			color = "warning";
-		}
-		else if (baseLocation.tz(myLocations[i]).hour() < 8 && baseLocation.tz(myLocations[i]).hour() >= 5) {
-			color = "warning";
-		}
-		else {
-			color = "danger";
-		}
+		color = colors(baseLocation.tz(myLocations[i]).hour());
 		html = '<tr class="' + color + '"><th class="placeName" scope="row">' + myLocations[i] + '</th><td class="placeTime">' + baseLocation.tz(myLocations[i]).format('h:mm a (dddd)') + '</td></tr>';
 		
 		$div.append(html);
 	}
 }
 
-
-
-
-
-
-
 function parseDate (proposedTime, proposedDate, proposedAMPM, proposedTimeZone) {
-	//$proposedTime.val(), $proposedDate.val(), $proposedAMPM.val(), $proposedTimeZone.val()
-	/*console.log(proposedTime);
-	console.log(proposedDate);
-	console.log(proposedAMPM);
-	console.log(proposedTimeZone);
-	var AMPMtime = (proposedAMPM === 'PM') ? proposedTime + 12 : proposedTime;*/
-	/*console.log('proposed ampm: '+ proposedAMPM + AMPMtime);
-	console.log('ampm time: '+ AMPMtime);*/
+	//need to fix bug: 9:44 won't work, must be 09:44
+	var patt = /(\d+?):(\d.*)/;
+	var match = patt.exec(proposedTime);
+	var hour = match[1];
+	var minutes = match[2];
+
+	hour = (parseInt(hour, 0) === 12) ? 0 : hour;
+	hour = (proposedAMPM === 'PM') ? parseInt(hour, 0) + 12 : hour;
+	hour = (hour < 10) ? "0" + hour : hour;
+
+	proposedTime = hour + ":" + minutes;
 	var data = proposedDate + "T" + proposedTime;
-	console.log(data);
-	console.log(proposedTimeZone);
 	proposedMoment = moment.tz(data, proposedTimeZone);
-	var hour = proposedMoment.hour();
-	proposedMoment = (proposedAMPM === 'PM') ? proposedMoment.hour(hour + 12) : proposedMoment;
-	// Currently does not work very well
-	// Needs output to be 2015-04-05T04:00
-	// So "2015-05-04" and "03:16" is okay, but "2015-05-04" and "3:16" isn't okay, or "3:16am" is not okay
+	//var hour = proposedMoment.hour();
+	//proposedMoment = (proposedAMPM === 'PM') ? proposedMoment.hour(hour + 12) : proposedMoment;
 	return proposedMoment;
 }
-
-
 
 function updateLocalTime (userTimeZone, userTimeZoneName, userTime) {
 	$('.local-name').text(userTimeZoneName);
@@ -191,6 +219,7 @@ function updateLocalTime (userTimeZone, userTimeZoneName, userTime) {
 	$('.localTime').text(userTime.format('dddd, MMMM Do YYYY, h:mma'));
 	$('.proposed-time-input').val(userTime.format('h:mm'));
 	$('.proposed-date-input').val(userTime.format('YYYY-MM-DD'));
+
 }
 
 function minutesToTime (totalMinutes) {
@@ -202,4 +231,64 @@ function minutesToTime (totalMinutes) {
 	return time;
 }
 
+function updateMeetingPlanner () {
+	var headers, body, hours, incrementingUTC, color;
+	for (var i = 0; i < myLocations.length; i++) {
+		headers += "<th>" + myLocations[i] + "</th>";
+	}
+	incrementingUTC = nowUTC.clone();
+	incrementingUTC.minutes(0);
+	
+	for (i = 0; i < 24; i++) {
+		body += "<tr>";
+		
+		for (var j = 0; j < myLocations.length; j++) {
+			color = colors(incrementingUTC.tz(myLocations[j]).hour());
+			body += '<td class="' + color + '">' + incrementingUTC.tz(myLocations[j]).format('h:mm a (dddd)') +"</td>";
+		}
+		body += "</tr>";
+		incrementingUTC.hours(incrementingUTC.hours() + 1);
+	}
+	$('.meeting-planner-table thead tr').empty();
+	$('.meeting-planner-table tbody tr').empty();
+	$('.meeting-planner-table thead tr').append(headers);
+	$('.meeting-planner-table tbody').append(body);
+}
 
+function colors (hour) {
+	// 0 to 5 danger
+	// 6 to 8 warning
+	// 9 to 5 (9 to 17) success
+	// 6 to 10 (18 to 22) warning
+	// 11 to 12 (23+) danger
+	if (hour <= 5) {
+		color = "danger";
+	}
+	else if (hour <= 8) {
+		color = "warning";
+	}
+	else if (hour <= 17) {
+		color = "success";
+	}
+	else if (hour <= 22) {
+		color = "warning";
+	}
+	else {
+		color = "danger";
+	}
+	return color;
+}
+
+function updateMyLocationsTable() {
+	$('table.my-location-table tbody').empty();
+	for (var i = 0; i < myLocations.length; i++) {
+		$('table.my-location-table tbody').append('<tr><td class="my-location-row"><span class="my-location-row-name">' + myLocations[i] + '</span>&nbsp;&nbsp;&nbsp;<a href="#" class="remove-my-location">remove</a></td></tr>');
+		//Since we're adding it dynamically, we must add the onlick handler for "remove" in the same function
+		$('.remove-my-location').on('click', function () {
+			$(this).parent().parent().remove(); //remove the row from the My Locations table
+			//myLocations.splice(index, 1);		//need to remove the value from the array here, but need to know the index first
+			//need to remove the value from the Current Time table
+			//need to remove the value from the Proposed Time table
+		});
+	}
+}

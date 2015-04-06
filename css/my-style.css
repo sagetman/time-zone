@@ -42,7 +42,7 @@ h2.inline {
 }
 
 .proposed-time-input, .proposed-date-input {
-	width: 100px !important;
+	
 	text-align: center;
 }
 
@@ -63,6 +63,86 @@ h2.inline {
 	margin-top: 75px;
 }
 
-.proposed-date-input {
-	margin-left: 15px;
+
+
+
+.twitter-typeahead .tt-query,
+.twitter-typeahead .tt-hint {
+	margin-bottom: 0;
 }
+.tt-hint {
+	/*display: block;*/
+	width: 100%;
+	height: 38px;
+	padding: 8px 12px;
+	font-size: 14px;
+	line-height: 1.428571429;
+	color: #999;
+	vertical-align: middle;
+	background-color: #ffffff;
+	border: 1px solid #cccccc;
+	border-radius: 4px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+	      box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+	-webkit-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+	      transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+}
+.tt-dropdown-menu {
+	min-width: 160px;
+	margin-top: 2px;
+	padding: 5px 0;
+	background-color: #ffffff;
+	border: 1px solid #cccccc;
+	border: 1px solid rgba(0, 0, 0, 0.15);
+	border-radius: 4px;
+	-webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+	      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+	background-clip: padding-box;
+ 
+}
+.tt-suggestion {
+	display: block;
+	padding: 3px 20px;
+}
+.tt-suggestion.tt-is-under-cursor {
+	color: #fff;
+	background-color: #428bca;
+}
+.tt-suggestion.tt-is-under-cursor a {
+	color: #fff;
+}
+.tt-suggestion p {
+	margin: 0;
+}
+.twitter-typeahead {
+	display: inline !important;
+}
+
+.row {
+	margin-right: 0;
+	margin-left: 0;
+}
+
+
+@media screen and (max-width: 768px) {
+    .proposed-time-input, .proposed-date-input {
+        width: 100%;
+    }
+    .proposed-form {
+    	margin-bottom: 10px;
+    	text-align: left;
+    }
+}
+
+
+@media screen and (min-width: 769px) {
+    .proposed-date-input {
+    	width: 100px !important;
+    	/*margin-left: 15px;*/
+    }
+    .proposed-time-input {
+    	width: 60px !important;
+    }
+}
+
+
